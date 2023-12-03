@@ -8,7 +8,8 @@ const connection = mysql.createConnection({
   port: config.rds_port,
   database: config.rds_db
 });
-connection.connect((err) => err && console.log(err));
+
+connection.connect((err) => {if(err) {console.log(err);} else{ console.log("success");}});
 
 const top_rated_products = async function(req, res) {
   
@@ -88,3 +89,9 @@ const top_expensive_products = async function(req, res) {
       }
     });
 }
+
+module.exports = {
+    top_rated_products,
+    top_cheapest_products,
+    top_expensive_products
+};
