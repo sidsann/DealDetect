@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const config = require('./config');
-const routes = require('./routes');
+const routes = require('./Route');
 
 const app = express();
 app.use(cors({
@@ -9,7 +9,7 @@ app.use(cors({
 }));
 
 
-app.get('/avrage_price', avrage_price);
+app.get('/average_price', routes.average_price);
 app.get('/random_product', routes.random_product);
 app.get('/count_product', routes.count_product);
 

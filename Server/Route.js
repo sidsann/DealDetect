@@ -11,7 +11,7 @@ const connection = mysql.createConnection({
 connection.connect((err) => err && console.log(err));
 
 //find average price across different platform 
-const averagePrice = async function(req, res){
+const average_price = async function(req, res){
   connection.query(`
   Select Platform, AVG(Price) as Average
   FROM Search_output
@@ -27,7 +27,7 @@ const averagePrice = async function(req, res){
 }
 
 //find a random product across all platforms
-const randomProd = async function (req, res) {
+const random_product = async function (req, res) {
   connection.query(`
   WITH joined as (SELECT m.Title, m.Price, m.Platform, URL.URL, SS.Rating, SS.Sales, k.Keywords
                   FROM Main m
@@ -49,7 +49,7 @@ const randomProd = async function (req, res) {
 }
 
 //get the count of products in each rating category in user’s search results
-const countProduct = async function (req, res) {
+const count_product = async function (req, res) {
   connection.query(`
   SELECT
 	CASE
@@ -73,7 +73,7 @@ const countProduct = async function (req, res) {
 }
 
 module.exports = {
-  averagePrice,
-  randomProd,
-  countProduct,
+  average_price,
+  random_product,
+  count_product,
 }
