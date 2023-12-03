@@ -8,6 +8,10 @@ app.use(cors({
     origin: '*',
 }));
 
+// We use express to define our various API endpoints and
+// provide their handlers that we implemented in Route.js
+app.get('/search', routes.regSearch);
+app.get('/advSearch', routes.advancedSearch)
 
 app.get('/average_price', routes.average_price);
 app.get('/random_product', routes.random_product);
@@ -18,3 +22,4 @@ app.listen(config.server_port, () => {
 });
 
 module.exports = app;
+
