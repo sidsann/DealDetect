@@ -11,7 +11,85 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {if(err) {console.log(err);} else{ console.log("success");}});
 
-//Route 1 for regular search function /search/:type
+const top_rated_products = async function(req, res) {
+  
+    const page = req.query.page;
+    const pageSize = req.query.page_size ? req.query.page_size : 10;
+    const offset = pageSize * (page - 1);
+
+      connection.query(`
+      WITH topSellers as (SELECT *
+        FROM Rating_Sales
+        ORDER BY Rating Desc, Sales Desc
+        LIMIT ${pageSize}
+        OFFSET ${offset}
+        )
+        SELECT m.Title, m.Price, m.Platform, u.URL, topSellers.Rating, topSellers.Sales
+        FROM topSellers
+        JOIN Main m ON topSellers.UID=m.UID
+        LEFT JOIN URL u ON topSellers.UID=u.UID;
+    `, (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json([]);
+      } else {
+        res.json(data);
+      }
+    });
+}
+
+const top_cheapest_products = async function(req, res) {
+  
+    const page = req.query.page;
+    const pageSize = req.query.page_size ? req.query.page_size : 10;
+    const offset = pageSize * (page - 1);
+
+      connection.query(`
+      SELECT m.Title, m.Price, m.Platform, URL.URL, SS.Rating, SS.Sales
+      FROM (
+         SELECT *
+         FROM Main
+         ORDER BY price
+         LIMIT ${pageSize}
+         OFFSET ${offset}
+          ) m
+      left join URL on m.UID = URL.UID
+      left join Rating_Sales SS on m.UID = SS.UID;
+    `, (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json([]);
+      } else {
+        res.json(data);
+      }
+    });
+}
+  
+
+const top_expensive_products = async function(req, res) {
+  
+    const page = req.query.page;
+    const pageSize = req.query.page_size ? req.query.page_size : 10;
+    const offset = pageSize * (page - 1);
+
+      connection.query(`
+      SELECT m.Title, m.Price, m.Platform, URL.URL, SS.Rating, SS.Sales
+      FROM (SELECT UID, Title, Price, Platform
+           FROM Main
+           ORDER BY price desc
+           LIMIT ${pageSize} OFFSET ${offset}) m
+              left join URL on m.UID = URL.UID
+              left join Rating_Sales SS on m.UID = SS.UID;
+    `, (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json([]);
+      } else {
+        res.json(data);
+      }
+    });
+}
+
 const regSearch = async function (req, res) {
   const pageSize = 25;
   const page = req.query.page;
@@ -55,7 +133,6 @@ OFFSET ${offset};
   );
 }
 
-//Route 2 for advanced search function
 const advancedSearch = async function (req, res) {
   const pageSize = 25;
   const page = req.query.page;
@@ -220,4 +297,7 @@ module.exports = {
   count_product,
   advancedSearch,
   regSearch,
+  top_rated_products,
+  top_cheapest_products,
+  top_expensive_products
 }
