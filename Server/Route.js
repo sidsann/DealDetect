@@ -219,5 +219,5 @@ module.exports = {
   random_product,
   count_product,
   advancedSearch,
-  searchString,
+  regSearch,
 }
