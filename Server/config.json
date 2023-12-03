@@ -1,9 +1,9 @@
 {
-    "rds_host": "cis550.ctga9wx7bhse.us-east-1.rds.amazonaws.com",
-    "rds_port": "3306",
-    "rds_user": "admin",
-    "rds_password": "cis5502023",
-    "rds_db": "Products",
-    "server_host": "localhost",
-    "server_port": "8080"
-  }
+  "rds_host": "cis550.ctga9wx7bhse.us-east-1.rds.amazonaws.com",
+  "rds_port": "3306",
+  "rds_user": "admin",
+  "rds_password": "cis5502023",
+  "rds_db": "Products",
+  "server_host": "localhost",
+  "server_port": "8080"
+}
