@@ -39,96 +39,6 @@ const rows = [
   {
     id: 'INV-1234',
     date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'O',
-      name: 'Olivia Ryhe',
-      email: 'olivia@email.com',
-    },
-  },
-  {
-    id: 'INV-1233',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'S',
-      name: 'Steve Hampton',
-      email: 'steve.hamp@email.com',
-    },
-  },
-  {
-    id: 'INV-1232',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'C',
-      name: 'Ciaran Murray',
-      email: 'ciaran.murray@email.com',
-    },
-  },
-  {
-    id: 'INV-1231',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'M',
-      name: 'Maria Macdonald',
-      email: 'maria.mc@email.com',
-    },
-  },
-  {
-    id: 'INV-1230',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'C',
-      name: 'Charles Fulton',
-      email: 'fulton@email.com',
-    },
-  },
-  {
-    id: 'INV-1229',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'J',
-      name: 'Jay Hooper',
-      email: 'hooper@email.com',
-    },
-  },
-  {
-    id: 'INV-1228',
-    date: 'Feb 3, 2023',
-    status: 'Refunded',
-    customer: {
-      initial: 'K',
-      name: 'Krystal Stevens',
-      email: 'k.stevens@email.com',
-    },
-  },
-  {
-    id: 'INV-1227',
-    date: 'Feb 3, 2023',
-    status: 'Paid',
-    customer: {
-      initial: 'S',
-      name: 'Sachin Flynn',
-      email: 's.flyn@email.com',
-    },
-  },
-  {
-    id: 'INV-1226',
-    date: 'Feb 3, 2023',
-    status: 'Cancelled',
-    customer: {
-      initial: 'B',
-      name: 'Bradley Rosales',
-      email: 'brad123@email.com',
-    },
-  },
-  {
-    id: 'INV-1234',
-    date: 'Feb 3, 2023',
     status: 'Paid',
     customer: {
       initial: 'O',
@@ -282,14 +192,17 @@ function SearchBar() {
   const [inputValue, setInputValue] = useState('');
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(event.target.value)
     setInputValue(event.target.value);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     console.log("HELLOOOOO")
-    //event.preventDefault(); // Prevent default form submission behavior
+    event.preventDefault(); // Prevent default form submission behavior
 
     const endpoint = 'http://localhost:8080/search';
+    // const endpoint = 'https://bug-free-fiesta-w6vjw5wj5jx2grqp-8080.app.github.dev/search';
+
     const queryParams = `?q=${encodeURIComponent(inputValue) + "&page=1"}`;
     const url = endpoint + queryParams;
     console.log(url);
@@ -297,24 +210,30 @@ function SearchBar() {
     try {
       const response = await fetch(url);
       const jsonData = await response.json();
-      console.log(jsonData); // Here you have your JSON response
+      console.log(jsonData + "success"); // Here you have your JSON response
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Input
-        type="text"
-        value={inputValue}
-        onChange={handleInputChange}
-        size="sm"
-        placeholder="Search"
-        startDecorator={<SearchIcon />}
-        sx={{ flexGrow: 1 }}
-      />
-    </form>
+    // <form onSubmit={handleSubmit}>
+    //   <Input
+    //     type="text"
+    //     value={inputValue}
+    //     onChange={handleInputChange}
+    //     size="sm"
+    //     placeholder="Search"
+    //     startDecorator={<SearchIcon />}
+    //     sx={{ flexGrow: 1 }}
+    //   />
+    // </form>
+   <form onSubmit={handleSubmit}>
+    <FormControl sx={{ flex: 1 }} size="sm" >
+      <FormLabel>Search for order</FormLabel>
+      <Input size="sm" placeholder="Search" startDecorator={<SearchIcon /> } value={inputValue} onChange={handleInputChange} />
+    </FormControl>
+  </form>
   );
 }
 
@@ -362,16 +281,22 @@ export default function OrderTable() {
   );
   return (
     <React.Fragment>
-      <Sheet
+      {/* <Sheet
         className="SearchAndFilters-mobile"
         sx={{
           display: { xs: 'flex', sm: 'none' },
           my: 1,
           gap: 1,
         }}
-      >     
-        <SearchBar/>
-        
+      >
+
+        <Input
+          size="sm"
+          placeholder="Search"
+          startDecorator={<SearchIcon />}
+          sx={{ flexGrow: 1 }}
+        />
+
         <IconButton
           size="sm"
           variant="outlined"
@@ -395,7 +320,7 @@ export default function OrderTable() {
             </Sheet>
           </ModalDialog>
         </Modal>
-      </Sheet>
+      </Sheet> */}
       <Box
         className="SearchAndFilters-tabletUp"
         sx={{
@@ -409,10 +334,11 @@ export default function OrderTable() {
           },
         }}
       >
-        <FormControl sx={{ flex: 1 }} size="sm">
+        {/* <FormControl sx={{ flex: 1 }} size="sm">
           <FormLabel>Search for product</FormLabel>
           <Input size="sm" placeholder="Search" startDecorator={<SearchIcon />} />
-        </FormControl>
+        </FormControl> */}
+        <SearchBar></SearchBar>
         {renderFilters()}
       </Box>
       <Sheet
@@ -500,7 +426,7 @@ export default function OrderTable() {
                 >
                   Sales Volume
                 </Link>
-              </th>              
+              </th>
               <th style={{ width: 75, padding: '12px 6px' }}>
                 <Link
                   underline="none"
