@@ -90,48 +90,48 @@ const top_expensive_products = async function(req, res) {
     });
 }
 
-const regSearch = async function (req, res) {
-  const pageSize = 25;
-  const page = req.query.page;
-  const offset = (page - 1) * pageSize;
-  const query = req.query.q;
-
-  connection.query(
-      `WITH search AS (
-        SELECT *
-        FROM Main
-        WHERE MATCH(title) AGAINST("${query}")
-       )
-SELECT s.Title, s.Price, s.Platform, URL.URL, SS.Rating, SS.Sales, k.Keywords
-FROM search s
-LEFT JOIN URL ON s.UID = URL.UID
-LEFT JOIN Rating_Sales SS ON s.UID = SS.UID
-LEFT JOIN Keywords k ON s.UID = k.UID
-LIMIT ${pageSize}
-OFFSET ${offset};
-`,
-      (err, data) => {
-        if (err || data.length === 0) {
-          console.error('Error or no data:', err);
-          res.json([]);
-        } else {
-          console.log("Raw data from SQL query:", data); // Before mapping
-
-          const arr = data.map((product) => ({
-            Title: product.Title,
-            Price: product.Price,
-            Platform: product.Platform,
-            URL: product.URL,
-            Rating: product.Rating,
-            Sales: product.Sales,
-          }));
-
-          console.log("Data after mapping:", arr); // After mapping
-          res.json(arr);
-        }
-      }
-  );
-}
+// const regSearch = async function (req, res) {
+//   const pageSize = 25;
+//   const page = req.query.page;
+//   const offset = (page - 1) * pageSize;
+//   const query = req.query.q;
+//
+//   connection.query(
+//       `WITH search AS (
+//         SELECT *
+//         FROM Main
+//         WHERE MATCH(title) AGAINST("${query}")
+//        )
+// SELECT s.UID, s.Title, s.Price, s.Platform, URL.URL, SS.Rating, SS.Sales
+// FROM search s
+// LEFT JOIN URL ON s.UID = URL.UID
+// LEFT JOIN Rating_Sales SS ON s.UID = SS.UID
+// LIMIT ${pageSize}
+// OFFSET ${offset};
+// `,
+//       (err, data) => {
+//         if (err || data.length === 0) {
+//           console.error('Error or no data:', err);
+//           res.json([]);
+//         } else {
+//           console.log("Raw data from SQL query:", data); // Before mapping
+//
+//           const arr = data.map((product) => ({
+//             UID: product.UID,
+//             Title: product.Title,
+//             Price: product.Price,
+//             Platform: product.Platform,
+//             URL: product.URL,
+//             Rating: product.Rating,
+//             Sales: product.Sales,
+//           }));
+//
+//           console.log("Data after mapping:", arr); // After mapping
+//           res.json(arr);
+//         }
+//       }
+//   );
+// }
 
 const advancedSearch = async function (req, res) {
   const pageSize = 25;
@@ -144,11 +144,11 @@ const advancedSearch = async function (req, res) {
   let wherePrice = "";
 
   if (lowPrice && highPrice) {
-    wherePrice = `WHERE Price BETWEEN ${lowPrice} AND ${highPrice}`;
+    wherePrice = `AND Price BETWEEN ${lowPrice} AND ${highPrice}`;
   } else if (lowPrice) {
-    wherePrice = `WHERE Price >= ${lowPrice}`;
+    wherePrice = `AND Price >= ${lowPrice}`;
   } else if (highPrice) {
-    wherePrice = `WHERE Price <= ${highPrice}`;
+    wherePrice = `AND Price <= ${highPrice}`;
   }
 
   const lowRating = req.query.lRating;
@@ -175,44 +175,45 @@ const advancedSearch = async function (req, res) {
     whereSales = `Sales <= ${highSales}`;
   }
 
-  const searchString = req.query.kw;
-
+  const searchString = req.query.q;
   const orderDirection = ["ASC", "DESC"];
   const orderVariable = ["Title", "Price", "Platform", "URL", "Rating", "Sales"];
-  const oDirection = req.query.oD;
-  const orderByVar = req.query.oV;
-  const orderBy = `${orderVariable[orderByVar] + " " + orderDirection[oDirection]}`
-  connection.query(
-      `SELECT s.Title, s.Price, s.Platform, URL.URL, SS.Rating, SS.Sales
-        FROM (
+  const oDirection = req.query.od;
+  const orderByVar = req.query.ov;
+  const orderBy = `${oDirection && orderByVar ? orderVariable[orderByVar] + " " + orderDirection[oDirection]: ""}`;
+  console.log("orderby=" + orderBy);
+  const query = (`SELECT s.UID, s.Title, s.Price, s.Platform, URL.URL, SS.Rating, SS.Sales
+        FROM ( 
             SELECT UID, Title, Price, Platform
             FROM Main
+            WHERE MATCH(title) AGAINST("${searchString}")
             ${wherePrice}
         ) s
         LEFT JOIN URL ON s.UID = URL.UID
-        LEFT JOIN (
+        ${whereRating || whereSales ? "": "LEFT "} JOIN (
             SELECT UID, Rating, Sales
             FROM Rating_Sales
             ${whereRating ? `WHERE ${whereRating}` : ""}
             ${whereRating && whereSales ? ` AND ${whereSales}` : ''}
             ${whereSales && !whereRating ? `WHERE ${whereSales}`: ""}
         ) SS ON s.UID = SS.UID
-        ${searchString ? `LEFT JOIN (
-            SELECT UID
-            FROM Keywords
-            WHERE MATCH(keywords) AGAINST("${searchString}")
-        ) k ON s.UID = k.UID` : ""}
-        ORDER BY ${orderBy}
+        ${orderBy ? `ORDER BY ${orderBy}` : ""}
         LIMIT ${pageSize}
-        OFFSET ${offset};`,
+        OFFSET ${offset};`).replace(/\n/g,"");
+
+  console.log(query);
+
+  connection.query(query,
       (err, data) => {
         if (err || data.length === 0) {
           console.error('Error or no data:', err);
+          console.log("Raw data from SQL query:", data); // Before mapping
           res.json([]);
         } else {
           console.log("Raw data from SQL query:", data); // Before mapping
 
           const arr = data.map((product) => ({
+            UID: product.UID,
             Title: product.Title,
             Price: product.Price,
             Platform: product.Platform,
@@ -296,7 +297,6 @@ module.exports = {
   random_product,
   count_product,
   advancedSearch,
-  regSearch,
   top_rated_products,
   top_cheapest_products,
   top_expensive_products

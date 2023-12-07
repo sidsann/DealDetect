@@ -14,8 +14,7 @@ app.get('/top_rated_products', routes.top_rated_products);
 app.get('/top_cheapest_products', routes.top_cheapest_products);
 app.get('/top_expensive_products', routes.top_expensive_products);
 
-app.get('/search', routes.regSearch);
-app.get('/advSearch', routes.advancedSearch)
+app.get('/search', routes.advancedSearch);
 
 app.get('/average_price', routes.average_price);
 app.get('/random_product', routes.random_product);
