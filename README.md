@@ -3,7 +3,7 @@ This is a web application that facilitates user comparison of products sold on m
 Thus far, we have a basic React template in our repository, and this will eventually house the frontend component of our application.
 
 
-*INSTRUCTIONS TO RUN THE PROGRAM LOCALLY*
+# INSTRUCTIONS TO RUN THE PROGRAM LOCALLY
 CD into Client and into Server and run 'npm i' in order to download all relevant node modules. Then CD into Client and run 'npm start', following which the browser tab containing the program should open automatically.
 
 
