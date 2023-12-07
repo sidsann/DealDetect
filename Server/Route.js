@@ -90,48 +90,6 @@ const top_expensive_products = async function(req, res) {
     });
 }
 
-// const regSearch = async function (req, res) {
-//   const pageSize = 25;
-//   const page = req.query.page;
-//   const offset = (page - 1) * pageSize;
-//   const query = req.query.q;
-//
-//   connection.query(
-//       `WITH search AS (
-//         SELECT *
-//         FROM Main
-//         WHERE MATCH(title) AGAINST("${query}")
-//        )
-// SELECT s.UID, s.Title, s.Price, s.Platform, URL.URL, SS.Rating, SS.Sales
-// FROM search s
-// LEFT JOIN URL ON s.UID = URL.UID
-// LEFT JOIN Rating_Sales SS ON s.UID = SS.UID
-// LIMIT ${pageSize}
-// OFFSET ${offset};
-// `,
-//       (err, data) => {
-//         if (err || data.length === 0) {
-//           console.error('Error or no data:', err);
-//           res.json([]);
-//         } else {
-//           console.log("Raw data from SQL query:", data); // Before mapping
-//
-//           const arr = data.map((product) => ({
-//             UID: product.UID,
-//             Title: product.Title,
-//             Price: product.Price,
-//             Platform: product.Platform,
-//             URL: product.URL,
-//             Rating: product.Rating,
-//             Sales: product.Sales,
-//           }));
-//
-//           console.log("Data after mapping:", arr); // After mapping
-//           res.json(arr);
-//         }
-//       }
-//   );
-// }
 
 const advancedSearch = async function (req, res) {
   const pageSize = 25;
