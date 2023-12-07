@@ -4,7 +4,7 @@ import Button from '@mui/joy/Button';
 import Divider from '@mui/joy/Divider';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
-import Link from '@mui/joy/Link';
+import Slider from '@mui/joy/Slider';
 import Input from '@mui/joy/Input';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
@@ -18,50 +18,9 @@ import MenuButton from '@mui/joy/MenuButton';
 import MenuItem from '@mui/joy/MenuItem';
 import Dropdown from '@mui/joy/Dropdown';
 import SearchIcon from '@mui/icons-material/Search';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-    if (b[orderBy] < a[orderBy]) {
-        return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-        return 1;
-    }
-    return 0;
-}
-
-type Order = 'asc' | 'desc';
-
-function getComparator<Key extends keyof any>(
-    order: Order,
-    orderBy: Key,
-): (
-    a: { [key in Key]: number | string },
-    b: { [key in Key]: number | string },
-) => number {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
-function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
-    const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) {
-            return order;
-        }
-        return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
-}
 
 function RowMenu() {
     return (
@@ -95,33 +54,50 @@ type DataItem = {
 };
 
 export default function OrderTable() {
-    const [order, setOrder] = React.useState<Order>('desc');
     const [selected, setSelected] = React.useState<readonly string[]>([]);
     const [open, setOpen] = React.useState(false);
 
-    const [page, setPage] = useState(1);
+    // const [page, setPage] = useState(1);
     const [inputValue, setInputValue] = useState('');
     const [queryData, setQueryData] = React.useState<JsonData | null>(null);
+    const [rating, setRating] = useState([0, 5]);
+    const [selectedSort, setSelectedSort] = useState('');
+    const [selectedSortOrder, setSelectedSortOrder] = useState('');
+    const [priceFilter, setPriceFilter] = useState('');
+    const [salesFilter, setSalesFilter] = useState('');
+    const [page, setPage] = useState(1);
 
-    type SearchBarProps = {
-        setQueryData: React.Dispatch<React.SetStateAction<JsonData | null>>;
-        setInputValue: React.Dispatch<React.SetStateAction<string>>;
+    const handleSalesFilter = (event:any, value:any) => {
+        setSalesFilter(value);
+        console.log("Selected:"+ value);
     };
-    useEffect(() => {
-        const fetchPageResults = async () => {
-            try {
-                await getPageResults(page);
-            } catch (error) {
-                console.error('Error fetching page results:', error);
-            }
-        };
-        fetchPageResults();
-        }, [page]);
+    const handlePriceFilter = (event:any, value:any) => {
+        setPriceFilter(value);
+        console.log("Selected:"+ value);
+    };
+    const handleSortChange = (event:any, value:any) => {
+        setSelectedSort(value);
+        console.log("Selected:"+ value);
+    };
+    const handleSortOrderChange = (event:any, value:any) => {
+        setSelectedSortOrder(value);
+        console.log("Selected:"+ value);
+    };
+    const handleRatingChange = (event: Event, newValue: number | number[]) => {
+        setRating(newValue as number[]);
+        console.log("Selected:" + rating);
+    };
 
-    const getPageResults = async (nextPage:number) => {
+
+    const getPageResults = async (newPage:number) => {
         const endpoint = 'http://localhost:8080/search';
 
-        const queryParams = `?q=${encodeURIComponent(inputValue) + `&page=${nextPage}`}`;
+        const queryParams = `?q=${encodeURIComponent(inputValue) +
+        `&page=${newPage}` +
+        `${(rating[0] != 0 || rating[1] != 5) ? `&lRating=${rating[0]}&hRating=${rating[1]}`: ""}` +
+        `${selectedSort && selectedSortOrder ? `&od=${selectedSortOrder=="Ascending"? "0": "1"}&ov=${selectedSort}`:""}`+
+        `${priceFilter ? `${priceFilter}`: ""}`+
+        `${salesFilter ? `${salesFilter}`: ''}`}`;
         const url = endpoint + queryParams;
         console.log(url);
 
@@ -134,70 +110,23 @@ export default function OrderTable() {
         }
     };
 
-    const handleNextPage = () => {
-        setPage(prevPage => prevPage + 1);
+
+    const handleNextPage = async () => {
+        await getPageResults(page+1);
+        setPage(page+1);
     };
 
-    const handlePreviousPage = () => {
-        setPage(prevPage => Math.max(prevPage - 1, 1));
+    const handlePreviousPage = async () => {
+         await getPageResults(Math.max(page - 1, 1));
+         setPage(Math.max(page-1,1));
     };
 
-    function SearchBar({setQueryData, setInputValue}: SearchBarProps) {
-        const [query, setQuery] = useState('');
-
-        const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            setQuery(event.target.value)
-            console.log(event.target.value)
-        };
-
-        const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-            event.preventDefault(); // Prevent default form submission behavior
-
-            const endpoint = 'http://localhost:8080/search';
-
-            const queryParams = `?q=${encodeURIComponent(query) + "&page=1"}`;
-            const url = endpoint + queryParams;
-            setInputValue(query);
-            console.log(url);
-
-            try {
-                const response = await fetch(url);
-                const jsonData = await response.json();
-                setQueryData(jsonData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
-        return (
-            <form onSubmit={handleSubmit}>
-                <FormControl sx={{flex: 1}} size="sm">
-                    <FormLabel>Search for order</FormLabel>
-                    <Input size="sm" placeholder="Search" startDecorator={<SearchIcon/>} value={query}
-                           onChange={handleInputChange}/>
-                </FormControl>
-            </form>
-        );
-    }
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(event.target.value);
+        console.log(event.target.value);
+    };
 
 
-    const renderFilters = () => (
-        <React.Fragment>
-            <FormControl size="sm">
-                <FormLabel>Sort</FormLabel>
-                <Select
-                    size="sm"
-                    placeholder="Sort by"
-                    slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
-                >
-                    <Option value="paid">Paid</Option>
-                    <Option value="pending">Pending</Option>
-                    <Option value="refunded">Refunded</Option>
-                    <Option value="cancelled">Cancelled</Option>
-                </Select>
-            </FormControl>
-        </React.Fragment>
-    );
     return (
         <React.Fragment>
             <Box
@@ -212,10 +141,84 @@ export default function OrderTable() {
                     },
                 }}
             >
-                <SearchBar setQueryData={setQueryData}
-                           setInputValue={setInputValue}
-                ></SearchBar>
-                {renderFilters()}
+
+                    <FormControl sx={{flex: 1}} size="sm">
+                        <FormLabel>Search</FormLabel>
+                        <Input size="sm" placeholder="Search" startDecorator={<SearchIcon/>} value={inputValue}
+                               onChange={handleInputChange}/>
+                    </FormControl>
+                <FormControl size="sm">
+                    <FormLabel>Sort</FormLabel>
+                    <Select
+                        size="sm"
+                        placeholder="Sort by"
+                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        onChange={handleSortChange}
+                    >
+                        <Option value="">No Sort Variable</Option>
+                        <Option value="1">Price</Option>
+                        <Option value="5">Sales Volume</Option>
+                        <Option value="4">Rating</Option>
+                    </Select>
+                </FormControl>
+                <FormControl size="sm">
+                    <FormLabel>Order</FormLabel>
+                    <Select
+                        size="sm"
+                        placeholder="Sort Order"
+                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        onChange={handleSortOrderChange}
+                    >
+                        <Option value="">No Sort Order</Option>
+                        <Option value="Ascending">Ascending</Option>
+                        <Option value="Descending">Descending</Option>
+                    </Select>
+                </FormControl>
+
+                <FormControl size="sm">
+                    <FormLabel>Price</FormLabel>
+                    <Select
+                        size="sm"
+                        placeholder="Filter by Price"
+                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        onChange={handlePriceFilter}
+                    >
+                        <Option value="">Any Price</Option>
+                        <Option value="&hPrice=10">&lt;$10</Option>
+                        <Option value="&lPrice=10&hPrice=50">$10 - $50</Option>
+                        <Option value="&lPrice=50&hPrice=200">$50 - $200</Option>
+                        <Option value="&lPrice=200">&gt;$200</Option>
+                    </Select>
+                </FormControl>
+                <FormControl size="sm">
+                    <FormLabel>Sales</FormLabel>
+                    <Select
+                        size="sm"
+                        placeholder="Filter by Sales Volume"
+                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        onChange={handleSalesFilter}
+                    >
+                        <Option value="">Any Sales</Option>
+                        <Option value="&lSales=100">&ge;100 sold</Option>
+                        <Option value="&lSales=500">&ge;500 sold</Option>
+                        <Option value="&lSales=1000">&ge;1000 sold</Option>
+                        <Option value="&lSales=5000">&ge;5000 sold</Option>
+                    </Select>
+                </FormControl>
+                <Button style={{width:"150px", height:"50px", marginTop:"25px"}} onClick={async ()=>{await getPageResults(1); setPage(1);}}>Submit Query</Button>
+                <div>
+
+                    <FormControl size={"sm"}><FormLabel>Filter by Rating</FormLabel> </FormControl>
+                    <Slider
+                        value={rating}
+                        onChange={handleRatingChange}
+                        valueLabelDisplay="auto"
+                        min={0}
+                        max={5}
+                        style={{width: "60rem"}}
+
+                    />
+                </div>
             </Box>
             <Sheet
                 className="OrderTableContainer"
@@ -247,63 +250,9 @@ export default function OrderTable() {
                         </th>
                         <th style={{width: 60, padding: '12px 6px'}}>Platform</th>
                         <th style={{width: 140, padding: '12px 6px'}}>Name</th>
-                        <th style={{width: 90, padding: '12px 6px'}}>
-                            <Link
-                                underline="none"
-                                color="primary"
-                                component="button"
-                                onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-                                fontWeight="lg"
-                                endDecorator={<ArrowDropDownIcon/>}
-                                sx={{
-                                    '& svg': {
-                                        transition: '0.2s',
-                                        transform:
-                                            order === 'desc' ? 'rotate(0deg)' : 'rotate(180deg)',
-                                    },
-                                }}
-                            >
-                                Price
-                            </Link>
-                        </th>
-                        <th style={{width: 90, padding: '12px 6px'}}>
-                            <Link
-                                underline="none"
-                                color="primary"
-                                component="button"
-                                onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-                                fontWeight="lg"
-                                endDecorator={<ArrowDropDownIcon/>}
-                                sx={{
-                                    '& svg': {
-                                        transition: '0.2s',
-                                        transform:
-                                            order === 'desc' ? 'rotate(0deg)' : 'rotate(180deg)',
-                                    },
-                                }}
-                            >
-                                Sales Volume
-                            </Link>
-                        </th>
-                        <th style={{width: 75, padding: '12px 6px'}}>
-                            <Link
-                                underline="none"
-                                color="primary"
-                                component="button"
-                                onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-                                fontWeight="lg"
-                                endDecorator={<ArrowDropDownIcon/>}
-                                sx={{
-                                    '& svg': {
-                                        transition: '0.2s',
-                                        transform:
-                                            order === 'desc' ? 'rotate(0deg)' : 'rotate(180deg)',
-                                    },
-                                }}
-                            >
-                                Rating
-                            </Link>
-                        </th>
+                        <th style={{width: 90, padding: '12px 6px', textAlign: "center"}}>Price</th>
+                        <th style={{width: 90, padding: '12px 6px', textAlign:"center"}}>Sales Volume</th>
+                        <th style={{width: 75, padding: '12px 6px', textAlign:"center"}}>Rating</th>
                         <th style={{width: 70, padding: '12px 6px'}}>Purchase Link</th>
                     </tr>
                     </thead>
@@ -327,21 +276,21 @@ export default function OrderTable() {
                                 />
                             </td>
                             <td>
-                                <Typography level="body-xs">{row.Platform}</Typography>
+                                <Typography level="body-lg">{row.Platform}</Typography>
                             </td>
                             <td>
                                 <Typography level="body-xs">{row.Title}</Typography>
                             </td>
                             <td>
-                                <Typography level="body-xs">{row.Price}</Typography>
+                                <Typography level="body-lg" style={{textAlign:"center"}}>{row.Price}</Typography>
 
                             </td>
                             <td>
-                                <Typography level="body-xs">{row.Sales}</Typography>
+                                <Typography level="body-lg" style={{textAlign:"center"}}>{row.Sales}</Typography>
 
                             </td>
                             <td>
-                                <Typography level="body-xs">{row.Rating}</Typography>
+                                <Typography level="body-lg" style={{textAlign:"center"}}>{row.Rating}</Typography>
 
                             </td>
                             <td>
@@ -374,11 +323,8 @@ export default function OrderTable() {
                     pt: 2,
                     gap: 1,
                     [`& .${iconButtonClasses.root}`]: {borderRadius: '50%'},
-                    display: {
-                        xs: 'none',
-                        md: 'flex',
-                    },
                 }}
+                style={{display:"flex",justifyContent:"space-between" }}
             >
                 <Button
                     size="sm"
@@ -390,18 +336,6 @@ export default function OrderTable() {
                     Previous
                 </Button>
 
-                <Box sx={{flex: 1}}/>
-                {['1', '2', '3', '…', '8', '9', '10'].map((page) => (
-                    <IconButton
-                        key={page}
-                        size="sm"
-                        variant={Number(page) ? 'outlined' : 'plain'}
-                        color="neutral"
-                    >
-                        {page}
-                    </IconButton>
-                ))}
-                <Box sx={{flex: 1}}/>
 
                 <Button
                     size="sm"
