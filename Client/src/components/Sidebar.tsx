@@ -14,7 +14,7 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import ColorSchemeToggle from './ColorSchemeToggle';
-import { closeSidebar } from '../utils';
+import { closeSidebar } from './helper_scripts/utils';
 
 function Toggler({
   defaultExpanded = false,

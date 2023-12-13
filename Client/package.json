@@ -8,15 +8,18 @@
     "@mui/icons-material": "latest",
     "@mui/joy": "latest",
     "@mui/material": "latest",
+    "@react-oauth/google": "^0.12.1",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "mkcert": "^3.2.0",
     "react": "latest",
     "react-dom": "latest",
+    "react-router-dom": "^6.20.1",
     "react-scripts": "^5.0.1",
     "typescript": "latest"
   },
   "scripts": {
-    "start": "concurrently \"npm start --prefix ../Server\" \"react-scripts start\" ",
+    "start": "concurrently \"npm start --prefix ../Server\" \"HTTPS=true SSL_CRT_FILE=./https_certs/localhost.pem SSL_KEY_FILE=./https_certs/localhost-key.pem react-scripts start\" ",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
