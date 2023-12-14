@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
 import Divider from '@mui/joy/Divider';
@@ -11,7 +11,7 @@ import Option from '@mui/joy/Option';
 import Table from '@mui/joy/Table';
 import Sheet from '@mui/joy/Sheet';
 import Checkbox from '@mui/joy/Checkbox';
-import IconButton, {iconButtonClasses} from '@mui/joy/IconButton';
+import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
 import Typography from '@mui/joy/Typography';
 import Menu from '@mui/joy/Menu';
 import MenuButton from '@mui/joy/MenuButton';
@@ -21,21 +21,23 @@ import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import MoreInformation from './MoreInformation';
+
 
 function RowMenu() {
     return (
         <Dropdown>
             <MenuButton
-                slots={{root: IconButton}}
-                slotProps={{root: {variant: 'plain', color: 'neutral', size: 'sm'}}}
+                slots={{ root: IconButton }}
+                slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
             >
-                <MoreHorizRoundedIcon/>
+                <MoreHorizRoundedIcon />
             </MenuButton>
-            <Menu size="sm" sx={{minWidth: 140}}>
+            <Menu size="sm" sx={{ minWidth: 140 }}>
                 <MenuItem>Edit</MenuItem>
                 <MenuItem>Rename</MenuItem>
                 <MenuItem>Move</MenuItem>
-                <Divider/>
+                <Divider />
                 <MenuItem color="danger">Delete</MenuItem>
             </Menu>
         </Dropdown>
@@ -66,22 +68,23 @@ export default function OrderTable() {
     const [priceFilter, setPriceFilter] = useState('');
     const [salesFilter, setSalesFilter] = useState('');
     const [page, setPage] = useState(1);
+    const [infoModalOpen, setInfoModalOpen] = useState(false);
 
-    const handleSalesFilter = (event:any, value:any) => {
+    const handleSalesFilter = (event: any, value: any) => {
         setSalesFilter(value);
-        console.log("Selected:"+ value);
+        console.log("Selected:" + value);
     };
-    const handlePriceFilter = (event:any, value:any) => {
+    const handlePriceFilter = (event: any, value: any) => {
         setPriceFilter(value);
-        console.log("Selected:"+ value);
+        console.log("Selected:" + value);
     };
-    const handleSortChange = (event:any, value:any) => {
+    const handleSortChange = (event: any, value: any) => {
         setSelectedSort(value);
-        console.log("Selected:"+ value);
+        console.log("Selected:" + value);
     };
-    const handleSortOrderChange = (event:any, value:any) => {
+    const handleSortOrderChange = (event: any, value: any) => {
         setSelectedSortOrder(value);
-        console.log("Selected:"+ value);
+        console.log("Selected:" + value);
     };
     const handleRatingChange = (event: Event, newValue: number | number[]) => {
         setRating(newValue as number[]);
@@ -89,15 +92,15 @@ export default function OrderTable() {
     };
 
 
-    const getPageResults = async (newPage:number) => {
+    const getPageResults = async (newPage: number) => {
         const endpoint = 'http://localhost:8080/search';
 
         const queryParams = `?q=${encodeURIComponent(inputValue) +
-        `&page=${newPage}` +
-        `${(rating[0] != 0 || rating[1] != 5) ? `&lRating=${rating[0]}&hRating=${rating[1]}`: ""}` +
-        `${selectedSort && selectedSortOrder ? `&od=${selectedSortOrder=="Ascending"? "0": "1"}&ov=${selectedSort}`:""}`+
-        `${priceFilter ? `${priceFilter}`: ""}`+
-        `${salesFilter ? `${salesFilter}`: ''}`}`;
+            `&page=${newPage}` +
+            `${(rating[0] != 0 || rating[1] != 5) ? `&lRating=${rating[0]}&hRating=${rating[1]}` : ""}` +
+            `${selectedSort && selectedSortOrder ? `&od=${selectedSortOrder == "Ascending" ? "0" : "1"}&ov=${selectedSort}` : ""}` +
+            `${priceFilter ? `${priceFilter}` : ""}` +
+            `${salesFilter ? `${salesFilter}` : ''}`}`;
         const url = endpoint + queryParams;
         console.log(url);
 
@@ -112,18 +115,21 @@ export default function OrderTable() {
 
 
     const handleNextPage = async () => {
-        await getPageResults(page+1);
-        setPage(page+1);
+        await getPageResults(page + 1);
+        setPage(page + 1);
     };
 
     const handlePreviousPage = async () => {
-         await getPageResults(Math.max(page - 1, 1));
-         setPage(Math.max(page-1,1));
+        await getPageResults(Math.max(page - 1, 1));
+        setPage(Math.max(page - 1, 1));
     };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
         console.log(event.target.value);
+    };
+    const handleMoreInformation = () => {
+        setInfoModalOpen(true);
     };
 
 
@@ -133,26 +139,26 @@ export default function OrderTable() {
                 sx={{
                     borderRadius: 'sm',
                     py: 2,
-                    display: {xs: 'none', sm: 'flex'},
+                    display: { xs: 'none', sm: 'flex' },
                     flexWrap: 'wrap',
                     gap: 1.5,
                     '& > *': {
-                        minWidth: {xs: '120px', md: '160px'},
+                        minWidth: { xs: '120px', md: '160px' },
                     },
                 }}
             >
 
-                    <FormControl sx={{flex: 1}} size="sm">
-                        <FormLabel>Search</FormLabel>
-                        <Input size="sm" placeholder="Search" startDecorator={<SearchIcon/>} value={inputValue}
-                               onChange={handleInputChange}/>
-                    </FormControl>
+                <FormControl sx={{ flex: 1 }} size="sm">
+                    <FormLabel>Search</FormLabel>
+                    <Input size="sm" placeholder="Search" startDecorator={<SearchIcon />} value={inputValue}
+                        onChange={handleInputChange} />
+                </FormControl>
                 <FormControl size="sm">
                     <FormLabel>Sort</FormLabel>
                     <Select
                         size="sm"
                         placeholder="Sort by"
-                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
                         onChange={handleSortChange}
                     >
                         <Option value="">No Sort Variable</Option>
@@ -166,7 +172,7 @@ export default function OrderTable() {
                     <Select
                         size="sm"
                         placeholder="Sort Order"
-                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
                         onChange={handleSortOrderChange}
                     >
                         <Option value="">No Sort Order</Option>
@@ -180,7 +186,7 @@ export default function OrderTable() {
                     <Select
                         size="sm"
                         placeholder="Filter by Price"
-                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
                         onChange={handlePriceFilter}
                     >
                         <Option value="">Any Price</Option>
@@ -195,7 +201,7 @@ export default function OrderTable() {
                     <Select
                         size="sm"
                         placeholder="Filter by Sales Volume"
-                        slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                        slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
                         onChange={handleSalesFilter}
                     >
                         <Option value="">Any Sales</Option>
@@ -205,7 +211,14 @@ export default function OrderTable() {
                         <Option value="&lSales=5000">&ge;5000 sold</Option>
                     </Select>
                 </FormControl>
-                <Button style={{width:"150px", height:"50px", marginTop:"25px"}} onClick={async ()=>{await getPageResults(1); setPage(1);}}>Submit Query</Button>
+                <Button style={{ width: "150px", height: "50px", marginTop: "25px" }} onClick={async () => { await getPageResults(1); setPage(1); }}>Submit Query</Button>
+                <Button
+                    style={{ width: "150px", height: "50px", marginTop: "25px" }}
+                    onClick={handleMoreInformation}
+                >
+                    More Information
+                </Button>
+                <MoreInformation open={infoModalOpen} onClose={() => setInfoModalOpen(false)} />
                 <div>
 
                     <FormControl size={"sm"}><FormLabel>Filter by Rating</FormLabel> </FormControl>
@@ -215,16 +228,17 @@ export default function OrderTable() {
                         valueLabelDisplay="auto"
                         min={0}
                         max={5}
-                        style={{width: "60rem"}}
+                        style={{ width: "60rem" }}
 
                     />
                 </div>
+
             </Box>
             <Sheet
                 className="OrderTableContainer"
                 variant="outlined"
                 sx={{
-                    display: {xs: 'none', sm: 'initial'},
+                    display: { xs: 'none', sm: 'initial' },
                     width: '100%',
                     borderRadius: 'sm',
                     flexShrink: 1,
@@ -245,75 +259,75 @@ export default function OrderTable() {
                     }}
                 >
                     <thead>
-                    <tr>
-                        <th style={{width: 48, textAlign: 'center', padding: '12px 6px'}}>
-                        </th>
-                        <th style={{width: 60, padding: '12px 6px'}}>Platform</th>
-                        <th style={{width: 140, padding: '12px 6px'}}>Name</th>
-                        <th style={{width: 90, padding: '12px 6px', textAlign: "center"}}>Price</th>
-                        <th style={{width: 90, padding: '12px 6px', textAlign:"center"}}>Sales Volume</th>
-                        <th style={{width: 75, padding: '12px 6px', textAlign:"center"}}>Rating</th>
-                        <th style={{width: 70, padding: '12px 6px'}}>Purchase Link</th>
-                    </tr>
+                        <tr>
+                            <th style={{ width: 48, textAlign: 'center', padding: '12px 6px' }}>
+                            </th>
+                            <th style={{ width: 60, padding: '12px 6px' }}>Platform</th>
+                            <th style={{ width: 140, padding: '12px 6px' }}>Name</th>
+                            <th style={{ width: 90, padding: '12px 6px', textAlign: "center" }}>Price</th>
+                            <th style={{ width: 90, padding: '12px 6px', textAlign: "center" }}>Sales Volume</th>
+                            <th style={{ width: 75, padding: '12px 6px', textAlign: "center" }}>Rating</th>
+                            <th style={{ width: 70, padding: '12px 6px' }}>Purchase Link</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {queryData && queryData.map((row) => (
-                        <tr key={row.UID}>
-                            <td style={{textAlign: 'center', width: 120}}>
-                                <Checkbox
-                                    size="sm"
-                                    checked={selected.includes(row.UID)}
-                                    color={selected.includes(row.UID) ? 'primary' : undefined}
-                                    onChange={(event) => {
-                                        setSelected((ids) =>
-                                            event.target.checked
-                                                ? ids.concat(row.UID)
-                                                : ids.filter((itemId) => itemId !== row.UID),
-                                        );
-                                    }}
-                                    slotProps={{checkbox: {sx: {textAlign: 'left'}}}}
-                                    sx={{verticalAlign: 'text-bottom'}}
-                                />
-                            </td>
-                            <td>
-                                <Typography level="body-lg">{row.Platform}</Typography>
-                            </td>
-                            <td>
-                                <Typography level="body-xs">{row.Title}</Typography>
-                            </td>
-                            <td>
-                                <Typography level="body-lg" style={{textAlign:"center"}}>{row.Price}</Typography>
+                        {queryData && queryData.map((row) => (
+                            <tr key={row.UID}>
+                                <td style={{ textAlign: 'center', width: 120 }}>
+                                    <Checkbox
+                                        size="sm"
+                                        checked={selected.includes(row.UID)}
+                                        color={selected.includes(row.UID) ? 'primary' : undefined}
+                                        onChange={(event) => {
+                                            setSelected((ids) =>
+                                                event.target.checked
+                                                    ? ids.concat(row.UID)
+                                                    : ids.filter((itemId) => itemId !== row.UID),
+                                            );
+                                        }}
+                                        slotProps={{ checkbox: { sx: { textAlign: 'left' } } }}
+                                        sx={{ verticalAlign: 'text-bottom' }}
+                                    />
+                                </td>
+                                <td>
+                                    <Typography level="body-lg">{row.Platform}</Typography>
+                                </td>
+                                <td>
+                                    <Typography level="body-xs">{row.Title}</Typography>
+                                </td>
+                                <td>
+                                    <Typography level="body-lg" style={{ textAlign: "center" }}>{row.Price}</Typography>
 
-                            </td>
-                            <td>
-                                <Typography level="body-lg" style={{textAlign:"center"}}>{row.Sales}</Typography>
+                                </td>
+                                <td>
+                                    <Typography level="body-lg" style={{ textAlign: "center" }}>{row.Sales}</Typography>
 
-                            </td>
-                            <td>
-                                <Typography level="body-lg" style={{textAlign:"center"}}>{row.Rating}</Typography>
+                                </td>
+                                <td>
+                                    <Typography level="body-lg" style={{ textAlign: "center" }}>{row.Rating}</Typography>
 
-                            </td>
-                            <td>
-                                {row.URL ? (
-                                    <a href={row.URL} target="_blank" rel="noreferrer">
-                                        <Button>
+                                </td>
+                                <td>
+                                    {row.URL ? (
+                                        <a href={row.URL} target="_blank" rel="noreferrer">
+                                            <Button>
+                                                Purchase
+                                            </Button>
+                                        </a>
+                                    ) : (
+                                        <Button
+                                            disabled
+                                            style={{
+                                                opacity: 0.5,
+                                                cursor: 'default'
+                                            }}
+                                        >
                                             Purchase
                                         </Button>
-                                    </a>
-                                ) : (
-                                    <Button
-                                        disabled
-                                        style={{
-                                            opacity: 0.5,
-                                            cursor: 'default'
-                                        }}
-                                    >
-                                        Purchase
-                                    </Button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </Table>
             </Sheet>
@@ -322,15 +336,15 @@ export default function OrderTable() {
                 sx={{
                     pt: 2,
                     gap: 1,
-                    [`& .${iconButtonClasses.root}`]: {borderRadius: '50%'},
+                    [`& .${iconButtonClasses.root}`]: { borderRadius: '50%' },
                 }}
-                style={{display:"flex",justifyContent:"space-between" }}
+                style={{ display: "flex", justifyContent: "space-between" }}
             >
                 <Button
                     size="sm"
                     variant="outlined"
                     color="neutral"
-                    startDecorator={<KeyboardArrowLeftIcon/>}
+                    startDecorator={<KeyboardArrowLeftIcon />}
                     onClick={handlePreviousPage}
                 >
                     Previous
@@ -341,7 +355,7 @@ export default function OrderTable() {
                     size="sm"
                     variant="outlined"
                     color="neutral"
-                    endDecorator={<KeyboardArrowRightIcon/>}
+                    endDecorator={<KeyboardArrowRightIcon />}
                     onClick={handleNextPage}
                 >
                     Next
