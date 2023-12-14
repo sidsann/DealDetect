@@ -2,21 +2,22 @@ import * as React from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
 import Typography from '@mui/joy/Typography';
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import useScript from './useScript';
 import Sidebar from './components/Sidebar';
-import OrderTable from './components/OrderTable';
+import ProductTable from './components/ProductTable';
 import Header from './components/Header';
+import FavoritesTable from './components/FavoritesTable';
+import {useState} from "react";
 
 const useEnhancedEffect =
   typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
 export default function JoyOrderDashboardTemplate() {
   const status = useScript('https://unpkg.com/feather-icons');
+  const [currentView, setCurrentView] = useState('ProductTable');
 
-  useEnhancedEffect(() => {
+    useEnhancedEffect(() => {
     // Feather icon setup: https://github.com/feathericons/feather#4-replace
     // @ts-ignore
     if (typeof feather !== 'undefined') {
@@ -30,7 +31,7 @@ export default function JoyOrderDashboardTemplate() {
       <CssBaseline />
       <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
         <Header />
-        <Sidebar />
+        <Sidebar setCurrentView={setCurrentView} />
         <Box
           component="main"
           className="MainContent"
@@ -67,7 +68,10 @@ export default function JoyOrderDashboardTemplate() {
               Products
             </Typography>
           </Box>
-          <OrderTable />
+
+                {currentView === 'ProductTable' && <ProductTable />}
+                {currentView === 'FavoritesTable' && <FavoritesTable />}
+
         </Box>
       </Box>
     </CssVarsProvider>

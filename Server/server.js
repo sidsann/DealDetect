@@ -20,6 +20,10 @@ app.get('/average_price', routes.average_price);
 app.get('/random_product', routes.random_product);
 app.get('/count_product', routes.count_product);
 
+app.get('/get_favorites', routes.get_favorites);
+app.post('/add_favorite', routes.add_favorite);
+app.delete('/delete_favorite', routes.delete_favorite);
+
 app.listen(config.server_port, () => {
     console.log(`Server running at http://${config.server_host}:${config.server_port}/`)
 });
