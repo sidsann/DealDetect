@@ -3,9 +3,6 @@ import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import Modal from '@mui/joy/Modal';
 import Button from '@mui/joy/Button';
-import List from '@mui/joy/List';
-import ListItem from '@mui/joy/ListItem';
-import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 
 interface MoreInformationProps {
     open: boolean;
@@ -75,10 +72,10 @@ const MoreInformation: React.FC<MoreInformationProps> = ({ open, onClose }) => {
                     </Box>
                     <Box display="flex" justifyContent="center" alignItems="center" sx={{ borderBottom: '1px solid lightgrey' }}>
                         <Typography sx={{ variant: "h5", fontWeight: 'bold', display: 'inline' }}>
-                            Product Amount:&nbsp;
+                            Page Size:&nbsp;
                         </Typography>
                         <Typography sx={{ variant: 'body1', display: 'inline' }}>
-                            {productAmount !== null ? `$${productAmount.toFixed(2)}` : 'Loading...'}
+                            {productAmount !== null ? `${productAmount.toFixed(0)}` : 'Loading...'}
                         </Typography>
                     </Box>
                     <Box display="flex" justifyContent="center" alignItems="center" sx={{ borderBottom: '1px solid lightgrey' }}>
@@ -86,7 +83,7 @@ const MoreInformation: React.FC<MoreInformationProps> = ({ open, onClose }) => {
                             Top Rated Product:&nbsp;
                         </Typography>
                         <Typography sx={{ variant: 'body1', display: 'inline' }}>
-                            {topRatedProduct !== null ? `$${topRatedProduct}` : 'Loading...'}
+                            {topRatedProduct !== null ? `${topRatedProduct}` : 'Loading...'}
                         </Typography>
                     </Box>
                     <Box display="flex" justifyContent="center" alignItems="center" sx={{ borderBottom: '1px solid lightgrey' }}>
@@ -94,7 +91,7 @@ const MoreInformation: React.FC<MoreInformationProps> = ({ open, onClose }) => {
                             Cheapest Product:&nbsp;
                         </Typography>
                         <Typography sx={{ variant: 'body1', display: 'inline' }}>
-                            {cheapestProduct !== null ? `$${cheapestProduct}` : 'Loading...'}
+                            {cheapestProduct !== null ? `${cheapestProduct}` : 'Loading...'}
                         </Typography>
                     </Box>
                     <Box display="flex" justifyContent="center" alignItems="center">

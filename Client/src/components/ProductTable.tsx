@@ -1,7 +1,6 @@
-import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react';
+import React, { useState} from 'react';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
-import Divider from '@mui/joy/Divider';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import Slider from '@mui/joy/Slider';
@@ -10,39 +9,16 @@ import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import Table from '@mui/joy/Table';
 import Sheet from '@mui/joy/Sheet';
-import Checkbox from '@mui/joy/Checkbox';
 import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
 import Typography from '@mui/joy/Typography';
-import Menu from '@mui/joy/Menu';
-import MenuButton from '@mui/joy/MenuButton';
-import MenuItem from '@mui/joy/MenuItem';
-import Dropdown from '@mui/joy/Dropdown';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import MoreInformation from './MoreInformation';
+import {FavoriteBorder} from "@mui/icons-material";
+import Favorite from '@mui/icons-material/Favorite'; // Filled heart icon
 
 
-function RowMenu() {
-    return (
-        <Dropdown>
-            <MenuButton
-                slots={{ root: IconButton }}
-                slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-            >
-                <MoreHorizRoundedIcon />
-            </MenuButton>
-            <Menu size="sm" sx={{ minWidth: 140 }}>
-                <MenuItem>Edit</MenuItem>
-                <MenuItem>Rename</MenuItem>
-                <MenuItem>Move</MenuItem>
-                <Divider />
-                <MenuItem color="danger">Delete</MenuItem>
-            </Menu>
-        </Dropdown>
-    );
-}
 
 type JsonData = DataItem[];
 type DataItem = {
@@ -55,11 +31,9 @@ type DataItem = {
     Sales: number | null;
 };
 
-export default function OrderTable() {
+export default function ProductTable() {
     const [selected, setSelected] = React.useState<readonly string[]>([]);
-    const [open, setOpen] = React.useState(false);
 
-    // const [page, setPage] = useState(1);
     const [inputValue, setInputValue] = useState('');
     const [queryData, setQueryData] = React.useState<JsonData | null>(null);
     const [rating, setRating] = useState([0, 5]);
@@ -112,7 +86,35 @@ export default function OrderTable() {
             console.error('Error fetching data:', error);
         }
     };
+    const addFavorite = async (uid:string) => {
+        const endpoint = `http://localhost:8080/add_favorite?uid=${uid}`;
 
+        try {
+            const response = await fetch(endpoint, { method: 'POST' });
+            if (response.ok) {
+                console.log("Insert successful");
+            } else {
+                console.error("Insert failed", response.status);
+            }
+        } catch (error) {
+            console.error('Error during insert:', error);
+        }
+    }
+
+    const deleteFavorite = async (uid:string) => {
+        const endpoint = `http://localhost:8080/delete_favorite?uid=${uid}`;
+
+        try {
+            const response = await fetch(endpoint, { method: 'DELETE' });
+            if (response.ok) {
+                console.log("Delete successful");
+            } else {
+                console.error("Delete failed", response.status);
+            }
+        } catch (error) {
+            console.error('Error during delete:', error);
+        }
+    }
 
     const handleNextPage = async () => {
         await getPageResults(page + 1);
@@ -274,20 +276,26 @@ export default function OrderTable() {
                         {queryData && queryData.map((row) => (
                             <tr key={row.UID}>
                                 <td style={{ textAlign: 'center', width: 120 }}>
-                                    <Checkbox
-                                        size="sm"
-                                        checked={selected.includes(row.UID)}
-                                        color={selected.includes(row.UID) ? 'primary' : undefined}
-                                        onChange={(event) => {
-                                            setSelected((ids) =>
-                                                event.target.checked
-                                                    ? ids.concat(row.UID)
-                                                    : ids.filter((itemId) => itemId !== row.UID),
-                                            );
+                                    <IconButton
+                                        variant="solid"
+                                        color="primary"
+                                        onClick={() => {
+                                            if (selected.includes(row.UID)) {
+                                                console.log("removing from table");
+                                                // Item is currently selected, so remove it (unselect)
+                                                setSelected(ids => ids.filter(itemId => itemId !== row.UID));
+                                                deleteFavorite(row.UID); // Call the delete function
+                                            } else {
+                                                console.log("adding to table");
+                                                // Item is not currently selected, so add it (select)
+                                                setSelected(ids => [...ids, row.UID]);
+                                                addFavorite(row.UID); // Call the add function
+                                            }
                                         }}
-                                        slotProps={{ checkbox: { sx: { textAlign: 'left' } } }}
-                                        sx={{ verticalAlign: 'text-bottom' }}
-                                    />
+                                    >
+                                        {selected.includes(row.UID) ? <Favorite /> : <FavoriteBorder />}
+                                    </IconButton>
+
                                 </td>
                                 <td>
                                     <Typography level="body-lg">{row.Platform}</Typography>

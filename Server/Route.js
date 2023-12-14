@@ -79,138 +79,6 @@ connection.connect((err) => { if (err) { console.log(err); } else { console.log(
         LIMIT ${pageSize}
         OFFSET ${offset};`).replace(/\n/g, "");
 
-    
-    // const checkTableQuery = "SHOW TABLES LIKE 'search_output'";
-    // connection.query(checkTableQuery, async (err, result) => {
-    //   if (err) {
-    //     console.error('Error checking table existence:', err);
-    //     res.status(500).json({ error: 'Internal Server Error' });
-    //     return;
-    //   }
-
-    //   // If the table exists, delete all its contents
-    //   if (result.length > 0) {
-    //     const deleteTableQuery = "DELETE FROM search_output";
-    //     await connection.query(deleteTableQuery, (err) => {
-    //       if (err) {
-    //         console.error('Error deleting table contents:', err);
-    //         res.status(500).json({ error: 'Internal Server Error' });
-    //         return;
-    //       }
-    //       console.log('Deleted contents of search_output table');
-    //     });
-    //   } else {
-    //     // If the table does not exist, create a new one
-    //     const createTableQuery = `
-    //     CREATE TABLE search_output (
-    //       UID INT PRIMARY KEY,
-    //       Title VARCHAR(255),
-    //       Price DECIMAL(10, 2),
-    //       Platform VARCHAR(255),
-    //       URL VARCHAR(255),
-    //       Rating DECIMAL(3, 2),
-    //       Sales INT
-    //     )
-    //   `;
-    //     await connection.query(createTableQuery, (err) => {
-    //       if (err) {
-    //         console.error('Error creating search_output table:', err);
-    //         res.status(500).json({ error: 'Internal Server Error' });
-    //         return;
-    //       }
-    //       console.log('Created search_output table');
-    //     });
-    //   }
-    //   const selectQuery = `SELECT s.UID, s.Title, s.Price, s.Platform, URL.URL, SS.Rating, SS.Sales
-    //                  FROM ( 
-    //                    SELECT UID, Title, Price, Platform
-    //                    FROM Main
-    //                    WHERE MATCH(title) AGAINST("${searchString}")
-    //                    ${wherePrice}
-    //                  ) s
-    //                  LEFT JOIN URL ON s.UID = URL.UID
-    //                  ${whereRating || whereSales ? "" : "LEFT "} JOIN (
-    //                    SELECT UID, Rating, Sales
-    //                    FROM Rating_Sales
-    //                    ${whereRating ? `WHERE ${whereRating}` : ""}
-    //                    ${whereRating && whereSales ? ` AND ${whereSales}` : ''}
-    //                    ${whereSales && !whereRating ? `WHERE ${whereSales}` : ""}
-    //                  ) SS ON s.UID = SS.UID
-    //                  ${orderBy ? `ORDER BY ${orderBy}` : ""}`;
-
-    //   const insertQuery = `
-    //   INSERT INTO search_output (UID, Title, Price, Platform, URL, Rating, Sales)
-    //   ${selectQuery}
-    //   ON DUPLICATE KEY UPDATE UID = VALUES(UID);`;
-      
-    //   connection.query(insertQuery, (insertErr, insertResults) => {
-    //     if (insertErr) {
-    //       console.error("Error inserting into search_output table:", insertErr);
-    //     } else {
-    //       console.log("Successfully inserted data into search_output table.");
-    //       console.log('insertquery', insertResults);
-    //     }
-    //   });
-
-    // });
-
-
-
-    // const checkAndCreateTable = async () => {
-    //   const checkTableQuery = "SHOW TABLES LIKE 'search_output'";
-    //   const createTableQuery = `
-    //   CREATE TABLE IF NOT EXISTS search_output (
-    //     UID INT PRIMARY KEY,
-    //     Title VARCHAR(255),
-    //     Price DECIMAL(10, 2),
-    //     Platform VARCHAR(255),
-    //     URL VARCHAR(255),
-    //     Rating DECIMAL(3, 2),
-    //     Sales INT
-    //   );`;
-
-    //   try {
-    //     await connection.query(checkTableQuery);
-    //     await connection.query(createTableQuery);
-    //   } catch (err) {
-    //     console.error('Error in checkAndCreateTable:', err);
-    //     throw err;
-    //   }
-    // };
-
-    // try {
-    //   await checkAndCreateTable();
-
-    //   // Clear the search_output table
-    //   //await connection.query("TRUNCATE TABLE search_output");
-
-    //   // Perform the search and insert results into search_output
-    //   const data = await connection.query(query);
-
-    //   if (data.length === 0) {
-    //     console.log("No data found");
-    //     res.json([]);
-    //   } else {
-    //     const insertQuery = "INSERT INTO search_output (UID, Title, Price, Platform, URL, Rating, Sales) VALUES ?";
-    //     const insertValues = data.map(item => [item.UID, item.Title, item.Price, item.Platform, item.URL, item.Rating, item.Sales]);
-
-    //     await connection.query(insertQuery, [insertValues]);
-
-    //     console.log("Data inserted into search_output");
-    //     res.json(data.map(product => ({
-    //       UID: product.UID,
-    //       Title: product.Title,
-    //       Price: product.Price,
-    //       Platform: product.Platform,
-    //       URL: product.URL,
-    //       Rating: product.Rating,
-    //       Sales: product.Sales,
-    //     })));
-    //   }
-    // } catch (err) {
-    //   console.error('Error in advancedSearch:', err);
-    //   res.status(500).json({ error: 'Internal Server Error' });
-    // }
 
     connection.query(query,
       (err, data) => {
@@ -372,6 +240,69 @@ const top_expensive_products = async function (req, res) {
   });
 }
 
+const get_favorites = async function (req, res) {
+  const pageSize = 25;
+  const page = parseInt(req.query.page) || 1;
+  const offset = (page - 1) * pageSize;
+  const query = "SELECT f.UID, m.Title, m.Price, m.Platform, u.URL, r.Rating, r.Sales, f.date_added" +
+      " FROM Favorites f JOIN Main m ON f.UID=m.UID JOIN URL u ON u.uid=f.UID" +
+      " JOIN Rating_Sales r ON r.UID=f.UID" +
+      " ORDER BY date_added DESC" +
+      ` LIMIT ${pageSize}` +
+      ` OFFSET ${offset}`
+  connection.query(query, (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
+    } else {
+      //res.json(data);
+      const arr = data.map((product) => ({
+        UID: product.UID,
+        Title: product.Title,
+        Price: product.Price,
+        Platform: product.Platform,
+        URL: product.URL,
+        Rating: product.Rating,
+        Sales: product.Sales,
+        date_added: product.date_added,
+      }));
+      console.log("Data after mapping:", arr); // After mapping
+      res.json(arr);
+    }
+  });
+}
+const add_favorite = async function (req) {
+  const uid = req.query.uid;
+  const query = `INSERT INTO Favorites (UID) VALUES ("${uid}");`;
+
+  connection.query(query, (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+    }
+  });
+}
+
+const delete_favorite = async function (req, res) {
+  const uid = req.query.uid;
+  const query = `DELETE FROM Favorites WHERE UID = "${uid}";`;
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      // Log the error and send an error response
+      console.error(err);
+      res.status(500).send({ success: false, message: 'Error deleting favorite' });
+    } else {
+      // Check if any rows were affected
+      if (results.affectedRows > 0) {
+        res.send({ success: true, message: 'Favorite deleted successfully' });
+      } else {
+        res.status(404).send({ success: false, message: 'Favorite not found' });
+      }
+    }
+  });
+};
+
+
 module.exports = {
   average_price,
   random_product,
@@ -379,5 +310,8 @@ module.exports = {
   advancedSearch,
   top_rated_products,
   top_cheapest_products,
-  top_expensive_products
+  top_expensive_products,
+  get_favorites,
+  add_favorite,
+  delete_favorite
 }

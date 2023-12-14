@@ -8,48 +8,25 @@ import ListItemContent from '@mui/joy/ListItemContent';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import FavoriteIcon from '@mui/icons-material/Favorite'; // or any other appropriate icon for favorites
+
 
 import ColorSchemeToggle from './ColorSchemeToggle';
 import { closeSidebar } from '../utils';
+import {useState} from "react";
 
-function Toggler({
-  defaultExpanded = false,
-  renderToggle,
-  children,
-}: {
-  defaultExpanded?: boolean;
-  children: React.ReactNode;
-  renderToggle: (params: {
-    open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  }) => React.ReactNode;
-}) {
-  const [open, setOpen] = React.useState(defaultExpanded);
-  return (
-    <React.Fragment>
-      {renderToggle({ open, setOpen })}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateRows: open ? '1fr' : '0fr',
-          transition: '0.2s ease',
-          '& > *': {
-            overflow: 'hidden',
-          },
-        }}
-      >
-        {children}
-      </Box>
-    </React.Fragment>
-  );
+interface SidebarProps {
+    setCurrentView: (view: string) => void; // Adjust the type based on what setCurrentView is expected to be
 }
+const Sidebar: React.FC<SidebarProps> = ({ setCurrentView }) => {
+    const [selectedItem, setSelectedItem] = useState('ProductTable');
 
-export default function Sidebar() {
-  return (
+    const handleItemClick = (item:string) => {
+        setSelectedItem(item);
+        setCurrentView(item);
+    };
+
+    return (
     <Sheet
       className="Sidebar"
       sx={{
@@ -128,72 +105,32 @@ export default function Sidebar() {
         >
 
           <ListItem>
-            <ListItemButton selected>
+              <ListItemButton
+                  selected={selectedItem === 'ProductTable'}
+                  onClick={() => handleItemClick('ProductTable')}
+              >
               <ShoppingCartRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Product Search</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
-          <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <GroupRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">User Favorites</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={{ transform: open ? 'rotate(180deg)' : 'none' }}
-                  />
+            <ListItem>
+                <ListItemButton
+                    selected={selectedItem === 'FavoritesTable'}
+                    onClick={() => handleItemClick('FavoritesTable')}
+                >
+                    <FavoriteIcon />
+                    <ListItemContent>
+                        <Typography level="title-sm">Favorites</Typography>
+                    </ListItemContent>
                 </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem sx={{ mt: 0.5 }}>
-                  <ListItemButton
-                    role="menuitem"
-                    component="a"
-                    href="/joy-ui/getting-started/templates/profile-dashboard/"
-                  >
-                    Sid's Shoes
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>Mars' clothes</ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>Create a new user</ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
-        </List>
-
-        <List
-          size="sm"
-          sx={{
-            mt: 'auto',
-            flexGrow: 0,
-            '--ListItem-radius': (theme) => theme.vars.radius.sm,
-            '--List-gap': '8px',
-            mb: 2,
-          }}
-        >
-          <ListItem>
-            <ListItemButton>
-              <SupportRoundedIcon />
-              Support
-            </ListItemButton>
-          </ListItem>
-          <ListItem>
-            <ListItemButton>
-              <SettingsRoundedIcon />
-              Settings
-            </ListItemButton>
-          </ListItem>
+            </ListItem>
         </List>
       </Box>
     </Sheet>
   );
 }
+
+export default Sidebar;
+
