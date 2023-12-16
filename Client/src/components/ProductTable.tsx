@@ -16,7 +16,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreInformation from './MoreInformation';
 import {FavoriteBorder} from "@mui/icons-material";
-import Favorite from '@mui/icons-material/Favorite'; // Filled heart icon
+import Favorite from '@mui/icons-material/Favorite'; 
 
 
 
