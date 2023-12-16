@@ -8,7 +8,7 @@ import ListItemContent from '@mui/joy/ListItemContent';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
-import FavoriteIcon from '@mui/icons-material/Favorite'; // or any other appropriate icon for favorites
+import FavoriteIcon from '@mui/icons-material/Favorite'; 
 
 
 import ColorSchemeToggle from './ColorSchemeToggle';
@@ -16,7 +16,7 @@ import { closeSidebar } from '../utils';
 import {useState} from "react";
 
 interface SidebarProps {
-    setCurrentView: (view: string) => void; // Adjust the type based on what setCurrentView is expected to be
+    setCurrentView: (view: string) => void;
 }
 const Sidebar: React.FC<SidebarProps> = ({ setCurrentView }) => {
     const [selectedItem, setSelectedItem] = useState('ProductTable');
