@@ -11,6 +11,7 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => { if (err) { console.log(err); } else { console.log("success"); } });
 
+  //implements search functionality
   const advancedSearch = async function (req, res) {
     const pageSize = 25;
     const page = parseInt(req.query.page) || 1;
@@ -119,15 +120,7 @@ connection.connect((err) => { if (err) { console.log(err); } else { console.log(
               }
               console.log("Data inserted into AdvancedSearchResults");
             });
-          });
-          
-          // const insertQuery = `INSERT INTO AdvancedSearchResults (UID, Title, Price, Platform, URL, Rating, Sales) VALUES ?`;
-          // const values = data.map(item => [item.UID, item.Title, item.Price, item.Platform, item.URL, item.Rating, item.Sales]);
-          // connection.query(insertQuery, [values], (err) => {
-          //   if (err) console.log(err);
-          //   else console.log("Data inserted into AdvancedSearchResults");
-          // });
-          
+          });        
         }
       }
     )
@@ -187,6 +180,7 @@ const count_product = async function (req, res) {
   });
 }
 
+//get the top rated product in the current page of results
 const top_rated_products = async function (req, res) {
 
   connection.query(`
@@ -204,7 +198,7 @@ const top_rated_products = async function (req, res) {
   });
 }
 
-
+//get the cheapest product in the current page of results
 const top_cheapest_products = async function (req, res) {
 
   connection.query(`
@@ -222,7 +216,7 @@ const top_cheapest_products = async function (req, res) {
   });
 }
 
-
+////get the most expensive product in the current page of results
 const top_expensive_products = async function (req, res) {
 
   connection.query(`
@@ -240,6 +234,7 @@ const top_expensive_products = async function (req, res) {
   });
 }
 
+//get the list of favorites
 const get_favorites = async function (req, res) {
   const pageSize = 25;
   const page = parseInt(req.query.page) || 1;
@@ -271,6 +266,7 @@ const get_favorites = async function (req, res) {
     }
   });
 }
+//add product to list of favorites
 const add_favorite = async function (req) {
   const uid = req.query.uid;
   const query = `INSERT INTO Favorites (UID) VALUES ("${uid}");`;
@@ -282,6 +278,7 @@ const add_favorite = async function (req) {
   });
 }
 
+//delete product from list of favorites
 const delete_favorite = async function (req, res) {
   const uid = req.query.uid;
   const query = `DELETE FROM Favorites WHERE UID = "${uid}";`;
